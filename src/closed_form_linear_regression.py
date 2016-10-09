@@ -78,15 +78,18 @@ def learn(dataframe):
 
     weights = find_weights(training_inputs, training_outputs)
 
+
     test_inputs = test_df[test_df.columns[0:2]]
+    test_inputs, _, _ = standardize_data(test_inputs, training_mean, training_std)
     test_inputs.insert(0, "Bias", 1)
 
     test_outputs = test_df[test_df.columns[-1]]
-    test_inputs, _, _ = standardize_data(test_inputs, training_mean, training_std)
 
     print test_inputs.shape, weights.shape
 
     results = apply_solution(test_inputs, weights)
+
+    print results
 
     rmse = compute_rmse(test_outputs, results)
 
@@ -136,7 +139,7 @@ def compute_rmse(expected, actual):
 
     N = len(expected)
 
-    difference = expected - actual
+    difference = actual - expected
     sum = (difference**2).sum()
 
     return math.sqrt(sum/N)
