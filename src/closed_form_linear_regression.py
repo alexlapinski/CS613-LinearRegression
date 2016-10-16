@@ -66,12 +66,12 @@ def find_weights(training_inputs, training_outputs):
     """
 
     # Compute Closed Form Linear Regression
-    first_term = np.dot(training_inputs.T, training_inputs)
-    first_term = np.linalg.inv(first_term)
+    result = np.linalg.inv(np.dot(training_inputs.T, training_inputs))
 
-    second_term = np.dot(training_inputs.T, training_outputs)
+    result = np.dot(result, training_inputs.T)
+    result = np.dot(result, training_outputs)
 
-    return np.dot(first_term, second_term)
+    return result
 
 
 def apply_solution(dataframe, weights):
@@ -99,7 +99,7 @@ def compute_rmse(expected, actual):
 
     N = len(expected)
 
-    difference = actual - expected
+    difference = expected - actual
     sum = (difference**2).sum()
 
     return math.sqrt(sum/N)
