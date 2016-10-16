@@ -1,18 +1,18 @@
-import os
 import argparse
-import plotting
 import pandas as pd
 import matplotlib.pyplot as plt
-
-def standardize_dataframe(dataframe):
-    return (dataframe - dataframe.mean()) / dataframe.std()
+import closed_form_linear_regression as cflr
+import s_fold_cross_validation as sfold
+import locally_weighted_linear_regression as lwlr
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="CS 613 - HW 2 Assignment")
-    parser.add_argument("-r", "--plot-raw-data", action="store_true", dest="plot_raw_data",
-                        help="Plot and save graphs of the raw data")
-    parser.add_argument("-s", "--plot-standardized-data", action="store_true", dest="plot_standardized_data",
-                        help="Plot and save graphs of the standardized data")
+    parser.add_argument("-c", "--cflr", action="store_true", dest="do_cflr",
+                        help="Execute the 'Closed Form Linear Regression' problem")
+    parser.add_argument("-s", "--s-folds", action="store_true", dest="do_sfold",
+                        help="Execute the 'S-Folds Cross Validation' problem")
+    parser.add_argument("-l", "--lwlr", action="store_true", dest="do_lwlr",
+                        help="Execute the 'Locally-Weighted Linear Regression' problem")
 
 
     parser.add_argument("--style", action="store", dest="style", default="ggplot",
@@ -24,15 +24,21 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if(not(args.plot_raw_data) and not(args.plot_standardized_data)):
+    if not args.do_cflr and not args.do_sfold and not args.do_lwlr:
         parser.print_help()
 
     plt.style.use(args.style)
 
     raw_data = pd.read_csv(args.data_filepath, index_col=0)
 
-    if(args.plot_raw_data):
-        raw_data.plot()
+    if(args.do_cflr):
+        weights, rmse = cflr.execute(raw_data)
+        print "Weights: {0}".format(weights)
+        print "RMSE (Root Mean Squared Error): {0}".format(rmse)
 
-    if(args.plot_standardized_data):
-        clean_df = standardize_dataframe(raw_data)
+
+    if(args.do_sfold):
+        sfold.execute(raw_data)
+
+    if(args.do_lwlr):
+        lwlr.execute(raw_data)

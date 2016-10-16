@@ -9,8 +9,8 @@ def standardize_data(dataframe, mean = None, std = None):
     No columns or rows will be excluded except for the index and headers.
     The mean and standard deviation used in standardizing the data will be returned as well.
     :param dataframe: The dataframe containing data to standardize
-    :param mean: A precaculauted mean to use
-    :param std: A precalculated standard devation to use
+    :param mean: A pre-calculated mean to use
+    :param std: A pre-calculated standard devation to use
     :return: Standardized dataframe, mean used and standard deviation
     """
 
@@ -46,54 +46,14 @@ def split_data(dataframe, training_data_ratio):
         raise ValueError("training_data_ratio must be between 0.0 and 1.0")
 
     max_training_index = int(math.floor(len(dataframe) * training_data_ratio))
+    print "Using {0} percent of the input data for training.".format(training_data_ratio)
 
     training_data = dataframe.iloc[:max_training_index]
     test_data = dataframe.iloc[max_training_index:]
 
+    print "Size of Training Data: {0}, Size of Test Data: {1}".format(len(training_data), len(test_data))
+
     return training_data, test_data
-
-
-def learn(dataframe):
-    """
-    Execute the linear regression algorithm and produce a set of weights and RMSE for evaluation
-    :param dataframe: input dataframe containing all data
-    :return:
-    """
-    training_data_size = 2.0 / 3.0
-
-    # Randomize Data
-    rand_df = randomize_data(dataframe)
-
-    # Select Training / Test sets
-    train_df, test_df = split_data(rand_df, training_data_size)
-
-    # Capture the predicted outputs
-    training_outputs = train_df[train_df.columns[-1]]
-
-    # Standardize training (excluding last column)
-    (training_inputs, training_mean, training_std) = standardize_data(train_df[train_df.columns[0:2]])
-
-    # Add offset column at the front
-    training_inputs.insert(0, "Bias", 1)
-
-    weights = find_weights(training_inputs, training_outputs)
-
-
-    test_inputs = test_df[test_df.columns[0:2]]
-    test_inputs, _, _ = standardize_data(test_inputs, training_mean, training_std)
-    test_inputs.insert(0, "Bias", 1)
-
-    test_outputs = test_df[test_df.columns[-1]]
-
-    print test_inputs.shape, weights.shape
-
-    results = apply_solution(test_inputs, weights)
-
-    print results
-
-    rmse = compute_rmse(test_outputs, results)
-
-    return weights, rmse
 
 
 def find_weights(training_inputs, training_outputs):
@@ -111,7 +71,9 @@ def find_weights(training_inputs, training_outputs):
 
     second_term = np.dot(training_inputs.T, training_outputs)
 
-    return np.dot(first_term, second_term)
+    #return np.dot(first_term, second_term)
+
+    return np.dot(np.dot(np.linalg.inv(np.dot(training_inputs.T, training_inputs)), training_inputs.T), training_outputs)
 
 
 def apply_solution(dataframe, weights):
@@ -143,3 +105,46 @@ def compute_rmse(expected, actual):
     sum = (difference**2).sum()
 
     return math.sqrt(sum/N)
+
+
+def execute(data):
+    """
+
+    :param data: Raw Data frame parsed from CSV
+    :return: Nothing
+    """
+
+    # 2. Randomizes the data
+    randomized_data = randomize_data(data)
+
+    # 3. Selects the first 2/3 (round up) of the data for training and the remaining for testing
+    training_data_size = 2.0 / 3.0
+    training_data, test_data = split_data(randomized_data, training_data_size)
+
+    # Capture the predicted outputs
+    training_outputs = training_data[training_data.columns[-1]]
+
+    # 4. Standardizes the data (except for the last column of course) using the training data
+    (training_inputs, training_mean, training_std) = standardize_data(training_data[training_data.columns[0:2]])
+
+    # Add offset column at the front
+    training_inputs.insert(0, "Bias", 1)
+
+    # 5. Computes the closed-form solution of linear regression
+    weights = find_weights(training_inputs, training_outputs)
+
+    test_inputs = test_data[test_data.columns[0:2]]
+    test_inputs, _, _ = standardize_data(test_inputs, training_mean, training_std)
+    test_inputs.insert(0, "Bias", 1)
+
+    test_outputs = test_data[test_data.columns[-1]]
+
+    # 6. Applies the solution to the testing samples
+    results = apply_solution(test_inputs, weights)
+
+    results_df = pd.DataFrame(results, index = test_outputs.index)
+
+    # 7. Computes the root mean squared error (RMSE)
+    rmse = compute_rmse(test_outputs, results)
+
+    return weights, rmse
