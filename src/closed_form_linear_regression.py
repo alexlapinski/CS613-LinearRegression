@@ -71,9 +71,7 @@ def find_weights(training_inputs, training_outputs):
 
     second_term = np.dot(training_inputs.T, training_outputs)
 
-    #return np.dot(first_term, second_term)
-
-    return np.dot(np.dot(np.linalg.inv(np.dot(training_inputs.T, training_inputs)), training_inputs.T), training_outputs)
+    return np.dot(first_term, second_term)
 
 
 def apply_solution(dataframe, weights):
