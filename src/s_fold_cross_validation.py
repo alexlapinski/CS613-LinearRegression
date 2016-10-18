@@ -2,10 +2,9 @@ import closed_form_linear_regression as cflr
 import numpy as np
 import util
 import math
-import sys
 
 
-def divide_data(input, num_parts = 5):
+def divide_data(input, num_parts=5):
     """
     Divide our data into 'num_parts' to be used for training / testing.
     If the data cannot be divided evenly, then the remaining data rows will be as evenly distributed
@@ -64,7 +63,7 @@ def select_training_data(folds, iteration):
     return training_data
 
 
-def execute(data, num_folds = 5):
+def execute(data, num_folds=5):
     """
     Compute the Root Mean Squared Error using num_folds for cross validation
     :param data: Raw Data frame parsed from CSV
@@ -89,7 +88,10 @@ def execute(data, num_folds = 5):
         training_data = select_training_data(folds, i)
 
         #   (b) Standardizes the data (except for the last column of course) based on the training data
-        standardized_train_data, mean, std = util.standardize_data(training_data)
+        standardized_train_data, mean, std = util.standardize_data(training_data[training_data.columns[0:2]])
+
+        # Add offset column at the front
+        standardized_train_data.insert(0, "Bias", 1)
 
         #   (c) Train a closed-form linear regression model
         training_outputs = training_data[training_data.columns[-1]]
