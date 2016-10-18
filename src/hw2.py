@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import closed_form_linear_regression as cflr
 import s_fold_cross_validation as sfold
 import locally_weighted_linear_regression as lwlr
+import gradient_descent as gd
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="CS 613 - HW 2 Assignment")
@@ -13,6 +14,8 @@ if __name__ == "__main__":
                         help="Execute the 'S-Folds Cross Validation' problem")
     parser.add_argument("-l", "--lwlr", action="store_true", dest="do_lwlr",
                         help="Execute the 'Locally-Weighted Linear Regression' problem")
+    parser.add_argument("-g", "--gradient", action="store_true", dest="do_gradient",
+                        help="Execute the 'Gradient Descent' problem")
 
 
     parser.add_argument("--style", action="store", dest="style", default="ggplot",
@@ -24,7 +27,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if not args.do_cflr and not args.do_sfold and not args.do_lwlr:
+    if not args.do_cflr and not args.do_sfold and not args.do_lwlr and not args.do_gradient:
         parser.print_help()
 
     plt.style.use(args.style)
@@ -46,4 +49,9 @@ if __name__ == "__main__":
         print "RMSE (Root Mean Squared Error): {0}".format(rmse)
 
     if(args.do_lwlr):
+        print "Executing Locally-Weighted Linear Regression"
         lwlr.execute(raw_data)
+
+    if (args.do_gradient):
+        print "Executing Gradient Descent"
+        gd.execute(raw_data)
