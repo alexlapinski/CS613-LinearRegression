@@ -1,38 +1,7 @@
 import pandas as pd
 import numpy as np
 import math
-
-
-def standardize_data(dataframe, mean = None, std = None):
-    """
-    Standardize the given dataframe (subtract mean and divide by standard deviation).
-    No columns or rows will be excluded except for the index and headers.
-    The mean and standard deviation used in standardizing the data will be returned as well.
-    :param dataframe: The dataframe containing data to standardize
-    :param mean: A pre-calculated mean to use
-    :param std: A pre-calculated standard devation to use
-    :return: Standardized dataframe, mean used and standard deviation
-    """
-
-    if mean is None:
-        mean = dataframe.mean()
-
-    if std is None:
-        std = dataframe.std()
-
-    standardized_dataframe = (dataframe - mean) / std
-
-    return standardized_dataframe, mean, std
-
-
-def randomize_data(dataframe):
-    """
-    Randomize the given dataframe.
-    :param dataframe:
-    :return: randomized dataframe
-    """
-    random_seed = 0
-    return dataframe.sample(n=len(dataframe), random_state=random_seed)
+import util
 
 
 def split_data(dataframe, training_data_ratio):
@@ -74,35 +43,22 @@ def find_weights(training_inputs, training_outputs):
     return result
 
 
-def apply_solution(dataframe, weights):
+def apply_solution(test_input, training_mean, training_std, weights):
     """
     Apply the closed form linear regression to the given dataframe.
     The input dataframe is expected to contain only the input columns, and not the output column
-    :param dataframe: Non-standardized inputs
+    :param test_input: Non-Standardized Dataframe, the expected output column is expected to be excluded
     :param weights: The weights produced by learning
     :param training_mean: The mean value used in standardizing the training set
     :param training_std: the standard deviation value using in standardizing the training set
     :return:
     """
+    standardized_test_inputs, _, _ = util.standardize_data(test_input, training_mean, training_std)
+    standardized_test_inputs.insert(0, "Bias", 1)
 
-    return np.dot(dataframe, weights)
+    results = np.dot(standardized_test_inputs, weights)
 
-
-def compute_rmse(expected, actual):
-    """
-    Compute the root mean squared error. We are given 2 column vectors of expected values and actual values.
-    We then compute the root means square error for this given dataset.
-    :param expected: A Column vector containing the expected datapoints
-    :param actual: A Column vector containing the actual datapoints (predicted using weights).
-    :return: Float indicating RMSE
-    """
-
-    N = len(expected)
-
-    difference = expected - actual
-    sum = (difference**2).sum()
-
-    return math.sqrt(sum/N)
+    return results
 
 
 def execute(data):
@@ -113,7 +69,7 @@ def execute(data):
     """
 
     # 2. Randomizes the data
-    randomized_data = randomize_data(data)
+    randomized_data = util.randomize_data(data)
 
     # 3. Selects the first 2/3 (round up) of the data for training and the remaining for testing
     training_data_size = 2.0 / 3.0
@@ -123,7 +79,7 @@ def execute(data):
     training_outputs = training_data[training_data.columns[-1]]
 
     # 4. Standardizes the data (except for the last column of course) using the training data
-    (training_inputs, training_mean, training_std) = standardize_data(training_data[training_data.columns[0:2]])
+    (training_inputs, training_mean, training_std) = util.standardize_data(training_data[training_data.columns[0:2]])
 
     # Add offset column at the front
     training_inputs.insert(0, "Bias", 1)
@@ -131,18 +87,14 @@ def execute(data):
     # 5. Computes the closed-form solution of linear regression
     weights = find_weights(training_inputs, training_outputs)
 
-    test_inputs = test_data[test_data.columns[0:2]]
-    test_inputs, _, _ = standardize_data(test_inputs, training_mean, training_std)
-    test_inputs.insert(0, "Bias", 1)
-
-    test_outputs = test_data[test_data.columns[-1]]
-
     # 6. Applies the solution to the testing samples
-    results = apply_solution(test_inputs, weights)
-
-    results_df = pd.DataFrame(results, index = test_outputs.index)
+    test_input = test_data[test_data.columns[0:2]]
+    expected = test_data[test_data.columns[-1]]
+    actual = apply_solution(test_input, training_mean, training_std, weights)
 
     # 7. Computes the root mean squared error (RMSE)
-    rmse = compute_rmse(test_outputs, results)
+    rmse = util.compute_rmse(expected, actual)
 
     return weights, rmse
+
+
