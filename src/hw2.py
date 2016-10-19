@@ -49,8 +49,11 @@ if __name__ == "__main__":
         print "RMSE (Root Mean Squared Error): {0}".format(rmse)
 
     if(args.do_lwlr):
+        k = 1
         print "Executing Locally-Weighted Linear Regression"
-        lwlr.execute(raw_data)
+        print "Using {0} for k in local weighting.".format(k)
+        rmse = lwlr.execute(raw_data, k=k)
+        print "RMSE (Root Mean Squared Error): {0}".format(rmse)
 
     if (args.do_gradient):
         print "Executing Gradient Descent"
