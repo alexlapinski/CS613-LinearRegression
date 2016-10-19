@@ -17,7 +17,6 @@ if __name__ == "__main__":
     parser.add_argument("-g", "--gradient", action="store_true", dest="do_gradient",
                         help="Execute the 'Gradient Descent' problem")
 
-
     parser.add_argument("--style", action="store", dest="style", default="ggplot",
                         help="Set the matplotlib render style (default: ggplot)")
     parser.add_argument("--data", action="store", dest="data_filepath", default="./x06Simple.csv",
