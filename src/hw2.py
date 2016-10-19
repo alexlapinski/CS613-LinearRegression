@@ -34,27 +34,26 @@ if __name__ == "__main__":
 
     raw_data = pd.read_csv(args.data_filepath, index_col=0)
 
-    if(args.do_cflr):
+    if args.do_cflr:
         print "Executing Closed Form Linear Regression"
         weights, rmse = cflr.execute(raw_data)
         print "Weights: {0}".format(weights)
         print "RMSE (Root Mean Squared Error): {0}".format(rmse)
 
-
-    if(args.do_sfold):
+    if args.do_sfold:
         num_folds = 5
         print "Executing S-Folds Validation Closed Form Linear Regression"
         print "Using {0} folds".format(num_folds)
         rmse = sfold.execute(raw_data, num_folds)
         print "RMSE (Root Mean Squared Error): {0}".format(rmse)
 
-    if(args.do_lwlr):
+    if args.do_lwlr:
         k = 1
         print "Executing Locally-Weighted Linear Regression"
         print "Using {0} for k in local weighting.".format(k)
         rmse = lwlr.execute(raw_data, k=k)
         print "RMSE (Root Mean Squared Error): {0}".format(rmse)
 
-    if (args.do_gradient):
+    if args.do_gradient:
         print "Executing Gradient Descent"
         gd.execute(raw_data)
