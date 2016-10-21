@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     parser.add_argument("-l", "--lwlr", action="store_true", dest="do_lwlr",
                         help="Execute the 'Locally-Weighted Linear Regression' problem")
-    parser.add_argument("--k-value", action="store", dest="k_value", default=1, type=int,
+    parser.add_argument("--k-value", action="store", dest="k_value", default=1, type=float,
                         help="Set the K-Value for locally weighted linear regression (default: 1)")
 
     parser.add_argument("-g", "--gradient", action="store_true", dest="do_gradient",
