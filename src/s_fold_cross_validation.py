@@ -1,5 +1,4 @@
 import closed_form_linear_regression as cflr
-import numpy as np
 import util
 import math
 
@@ -88,18 +87,18 @@ def execute(data, num_folds=5):
         training_data = select_training_data(folds, i)
 
         #   (b) Standardizes the data (except for the last column of course) based on the training data
-        standardized_train_data, mean, std = util.standardize_data(training_data[training_data.columns[0:2]])
+        standardized_train_data, mean, std = util.standardize_data(util.get_features(training_data))
 
         # Add offset column at the front
         standardized_train_data.insert(0, "Bias", 1)
 
         #   (c) Train a closed-form linear regression model
-        training_outputs = training_data[training_data.columns[-1]]
+        training_outputs = util.get_output(training_data)
         weights = cflr.find_weights(standardized_train_data, training_outputs)
 
         #   (d) Compute the squared error for each sample in the current testing fold
-        expected = test_data[test_data.columns[-1]]
-        actual = apply_solution(mean, std, test_data, weights)
+        expected = util.get_output(test_data)
+        actual = cflr.apply_solution(util.get_features(test_data), mean, std, weights)
 
         squared_error = (expected - actual)**2
         squared_errors.append(squared_error)
@@ -122,22 +121,6 @@ def compute_rmse(n, squared_errors):
         sum_of_squared_errors += squared_error.sum()
     rmse = math.sqrt(sum_of_squared_errors / n)
     return rmse
-
-
-def apply_solution(mean, std, test_data, weights):
-    """
-    Compute the predicted values from the given test data and weights
-    :param mean: training_data mean value
-    :param std: training_data standard deviation value
-    :param test_data: test dataframe to use for validation
-    :param weights: weights produced from training
-    :return: actual predicted values
-    """
-    test_input = test_data[test_data.columns[0:2]]
-    standardized_test_inputs, _, _ = util.standardize_data(test_input, mean, std)
-    standardized_test_inputs = standardized_test_inputs[test_input.columns]
-    standardized_test_inputs.insert(0, "Bias", 1)
-    return np.dot(standardized_test_inputs, weights)
 
 
 

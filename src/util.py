@@ -1,6 +1,24 @@
 import math
 
 
+def get_features(dataframe):
+    """
+    Return all but the last column of the dataframe as features
+    :param dataframe:
+    :return:
+    """
+    return dataframe[dataframe.columns[0:-1]]
+
+
+def get_output(dataframe):
+    """
+    Return the last column of the dataframe (this is our dependant variable, or the value we are trying to predict)
+    :param dataframe:
+    :return:
+    """
+    return dataframe[dataframe.columns[-1]]
+
+
 def standardize_data(dataframe, mean = None, std = None):
     """
     Standardize the given dataframe (subtract mean and divide by standard deviation).
@@ -54,6 +72,34 @@ def split_data(dataframe, training_data_ratio):
     return training_data, test_data
 
 
+def compute_se(expected, actual):
+    """
+    Compute the squared error. We are given 2 column vectors of expected values and actual values.
+    We then compute the square error for this given dataset.
+    :param expected: A Column vector containing the expected datapoints
+    :param actual: A Column vector containing the actual datapoints (predicted using weights).
+    :return: Float indicating SE
+    """
+
+    difference = expected - actual
+
+    return difference**2
+
+
+def compute_mse(expected, actual):
+    """
+    Compute the mean squared error. We are given 2 column vectors of expected values and actual values.
+    We then compute the mean square error for this given dataset.
+    :param expected: A Column vector containing the expected datapoints
+    :param actual: A Column vector containing the actual datapoints (predicted using weights).
+    :return: Float indicating MSE
+    """
+
+    n = len(expected)
+
+    return (compute_se(expected, actual)).sum()/n
+
+
 def compute_rmse(expected, actual):
     """
     Compute the root mean squared error. We are given 2 column vectors of expected values and actual values.
@@ -63,9 +109,4 @@ def compute_rmse(expected, actual):
     :return: Float indicating RMSE
     """
 
-    N = len(expected)
-
-    difference = expected - actual
-    sum = (difference**2).sum()
-
-    return math.sqrt(sum/N)
+    return math.sqrt(compute_mse(expected, actual))

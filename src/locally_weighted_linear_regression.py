@@ -1,6 +1,5 @@
 import util
 import math
-import pandas as pd
 import numpy as np
 
 
@@ -12,7 +11,7 @@ def compute_local_weights(training_points, test_point, k):
     :param k: tuning parameter
     :return:
     """
-    distance = (training_points - test_point).sum(axis=1)
+    distance = (abs(training_points - test_point)).sum(axis=1)
     return math.e ** ((-1 * distance)/k**2)
 
 
@@ -29,15 +28,15 @@ def execute(data, training_data_ratio=2.0/3.0, k=1):
 
     # 3. Select the first 2 / 3(round up) of the data for training and the remaining for testing
     training_data, test_data = util.split_data(randomized_data, training_data_ratio)
-    training_outputs = training_data[training_data.columns[-1]]
+    training_outputs = util.get_output(training_data)
 
     # 4. Standardize the data(except for the last column of course) using the training data
-    standardized_training_data, mean, std = util.standardize_data(training_data[training_data.columns[0:2]])
+    standardized_training_data, mean, std = util.standardize_data(util.get_features(training_data))
 
     # Add offset column at the front
     standardized_training_data.insert(0, "Bias", 1)
 
-    std_test_data, _, _ = util.standardize_data(test_data[test_data.columns[0:2]], mean, std)
+    std_test_data, _, _ = util.standardize_data(util.get_features(test_data), mean, std)
     std_test_data.insert(0, "Bias", 1)
 
     squared_errors = []
@@ -53,8 +52,7 @@ def execute(data, training_data_ratio=2.0/3.0, k=1):
         actual_output = np.dot(testing_sample, theta_query)
 
         # (c) Compute the squared error of the testing sample.
-        error = expected_output - actual_output
-        squared_errors.append(error ** 2)
+        squared_errors.append(util.compute_se(expected_output, actual_output))
 
     # 6. Compute the root mean squared error (RMSE)
     sum_of_squared_errors = 0

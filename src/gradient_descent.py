@@ -4,11 +4,16 @@ import random
 import matplotlib.pyplot as plt
 import os
 
-def plot_rmse_values(test_values, training_values, learning_rate, output_dir="./graphs", filename="gradient_descent_errors.png"):
+
+def plot_rmse_values(test_values, training_values, learning_rate, output_dir="./graphs",
+                     filename="gradient_descent_errors.png"):
     """
     Plot the RMSE values of the test data set and training dataset for each iteration
     :param test_values: The RMSE value of the test data at each iteration
+    :param learning_rate: The rate at which to advance along the gradient
     :param training_values: The RMSE value of the training data at each iteration
+    :param output_dir: The directory to place the graph.
+    :param filename: The name of the graph.
     :return: Nothing
     """
 
@@ -28,12 +33,12 @@ def plot_rmse_values(test_values, training_values, learning_rate, output_dir="./
     return output_path
 
 
-
 def execute(data, learning_rate=0.001, training_data_ratio=2.0/3, max_iterations=1000000):
     """
     Perform Batch Gradient Descent
 
     :param data: Raw Data frame parsed from CSV
+    :param learning_rate: The rate at which to advance along the gradient
     :param training_data_ratio: The percent of given data to use for training (remaining percent is used for testing)
     :param max_iterations: The maximum number of iterations to execute before exiting
     :return: Nothing
@@ -49,10 +54,10 @@ def execute(data, learning_rate=0.001, training_data_ratio=2.0/3, max_iterations
 
     # 4. Standardizes the data(except for the last column of course) base on the training data
     print "Standardizing Data"
-    std_training_data, mean, std = util.standardize_data(training_data[training_data.columns[0:2]])
+    std_training_data, mean, std = util.standardize_data(util.get_features(training_data))
     std_training_data.insert(0, "Bias", 1)
 
-    std_test_data, _, _ = util.standardize_data(test_data[test_data.columns[0:2]], mean, std)
+    std_test_data, _, _ = util.standardize_data(util.get_features(test_data), mean, std)
     std_test_data.insert(0, "Bias", 1)
 
     iteration = 0
@@ -65,8 +70,8 @@ def execute(data, learning_rate=0.001, training_data_ratio=2.0/3, max_iterations
     theta = np.array([random.uniform(-1, 1) for _ in xrange(0, 3)])
 
     # Capture our expected values for the training data
-    expected = training_data[training_data.columns[-1]]
-    test_data_expected = test_data[test_data.columns[-1]]
+    expected = util.get_output(training_data)
+    test_data_expected = util.get_output(test_data)
 
     # Capture the RMSE for test and training over all iterations
     test_rmse_values = []
@@ -105,7 +110,6 @@ def execute(data, learning_rate=0.001, training_data_ratio=2.0/3, max_iterations
     print "Plotting Errors"
     image_path = plot_rmse_values(test_rmse_values, training_rmse_values, learning_rate)
     print "Saved Image to '{0}'".format(image_path)
-
 
     # 6. Compute the RMSE of the testing data.
     print "Computing RMSE of Test Data"

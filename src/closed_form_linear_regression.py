@@ -2,22 +2,17 @@ import numpy as np
 import util
 
 
-def find_weights(training_inputs, training_outputs):
+def find_weights(inputs, output):
     """
     Execute the closed form linear regression algorithm.
     Returns the predicted weights and the mean and standard deviation of the training set.
-    :param training_inputs:
-    :param training_outputs:
+    :param inputs: Standardized Input features (including bias)
+    :param output: Output (dependant variable)
     :return:
     """
 
     # Compute Closed Form Linear Regression
-    result = np.linalg.inv(np.dot(training_inputs.T, training_inputs))
-
-    result = np.dot(result, training_inputs.T)
-    result = np.dot(result, training_outputs)
-
-    return result
+    return np.linalg.inv(inputs.T.dot(inputs)).dot(inputs.T).dot(output)
 
 
 def apply_solution(test_input, training_mean, training_std, weights):
@@ -33,9 +28,7 @@ def apply_solution(test_input, training_mean, training_std, weights):
     standardized_test_inputs, _, _ = util.standardize_data(test_input, training_mean, training_std)
     standardized_test_inputs.insert(0, "Bias", 1)
 
-    results = np.dot(standardized_test_inputs, weights)
-
-    return results
+    return standardized_test_inputs.dot(weights)
 
 
 def execute(data):
@@ -56,7 +49,7 @@ def execute(data):
     training_outputs = training_data[training_data.columns[-1]]
 
     # 4. Standardizes the data (except for the last column of course) using the training data
-    (training_inputs, training_mean, training_std) = util.standardize_data(training_data[training_data.columns[0:2]])
+    training_inputs, training_mean, training_std = util.standardize_data(util.get_features(training_data))
 
     # Add offset column at the front
     training_inputs.insert(0, "Bias", 1)
@@ -65,8 +58,8 @@ def execute(data):
     weights = find_weights(training_inputs, training_outputs)
 
     # 6. Applies the solution to the testing samples
-    test_input = test_data[test_data.columns[0:2]]
-    expected = test_data[test_data.columns[-1]]
+    test_input = util.get_features(test_data)
+    expected = util.get_output(test_data)
     actual = apply_solution(test_input, training_mean, training_std, weights)
 
     # 7. Computes the root mean squared error (RMSE)
